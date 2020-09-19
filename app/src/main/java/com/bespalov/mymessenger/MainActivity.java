@@ -22,10 +22,15 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -66,37 +71,53 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        db.collection("MyMessage").orderBy("date").addSnapshotListener(new EventListener <QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                if (value != null) {
+                    recyclerViewListMessage.scrollToPosition(adapter.getItemCount());
+                    List<Message> messages = value.toObjects(Message.class);
+                    adapter.setMessages(messages);
+
+                }
+            }
+        });
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_SEND_IMAGE && resultCode == RESULT_OK) {
-        if (data != null) {
-            Uri uri = data.getData();
-            final StorageReference imageRef = mStorageRef.child("image/" + uri.getLastPathSegment());
-            imageRef.putFile(uri).continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-                @Override
-                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                    if (!task.isSuccessful()) {
-                        throw task.getException();
-                    }
+            if (data != null) {
+                Uri uri = data.getData();
+                if (uri != null) {
+                    final StorageReference imagesRef = mStorageRef.child("images/" + uri.getLastPathSegment());
+                    imagesRef.putFile(uri).continueWithTask(new Continuation <UploadTask.TaskSnapshot, Task<Uri>>() {
+                        @Override
+                        public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                            if (!task.isSuccessful()) {
+                                throw task.getException();
+                            }
 
-                    // Continue with the task to get the download URL
-                    return imageRef.getDownloadUrl();
-                }
-            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                @Override
-                public void onComplete(@NonNull Task<Uri> task) {
-                    if (task.isSuccessful()) {
-                        Uri downloadUri = task.getResult();
-                        if (downloadUri != null) {
-                            sendMessage(null, downloadUri.toString());
+                            return imagesRef.getDownloadUrl();
                         }
-                    } else {
-                        // Handle failures
-                        // ...
-                    }
-                }
-            });
-
+                    }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Uri> task) {
+                            if (task.isSuccessful()) {
+                                Uri downloadUri = task.getResult();
+                                if (downloadUri != null) {
+                                    sendMessage("", downloadUri.toString() );
+                                }
+                            } else {
+                                // Handle failures
+                                // ...
+                            }
+                        }
+                    });
+            }
         }
 
         }
