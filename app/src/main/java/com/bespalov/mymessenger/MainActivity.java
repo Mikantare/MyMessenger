@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         imageViewSendImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_SEND);
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("image/jpeg");
                 intent.putExtra(intent.EXTRA_LOCAL_ONLY, true);
                 startActivityForResult(intent, RC_SEND_IMAGE);
@@ -87,7 +87,9 @@ public class MainActivity extends AppCompatActivity {
                 public void onComplete(@NonNull Task<Uri> task) {
                     if (task.isSuccessful()) {
                         Uri downloadUri = task.getResult();
-                        sendMessage(null, downloadUri.toString());
+                        if (downloadUri != null) {
+                            sendMessage(null, downloadUri.toString());
+                        }
                     } else {
                         // Handle failures
                         // ...
@@ -104,6 +106,8 @@ public class MainActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         mStorageRef = FirebaseStorage.getInstance().getReference();
         editTextMessage = findViewById(R.id.editTextMessage);
+        imageViewSendMessage = findViewById(R.id.imageViewSendMessage);
+        imageViewSendImage = findViewById(R.id.imageViewSendImage);
         recyclerViewListMessage = findViewById(R.id.recyclerViewListMessage);
         adapter = new MessageAdapter();
         recyclerViewListMessage.setLayoutManager(new LinearLayoutManager(this));
