@@ -52,13 +52,18 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         String url = message.getImageUrl();
         String textOfMessage = message.getTextMessage();
         holder.textViewAuthor.setText(message.getAuthor());
-        if (textOfMessage != null) {
-            holder.imageViewImage.setVisibility(View.INVISIBLE);
-            holder.textViewTextMessage.setVisibility(View.VISIBLE);
-            holder.textViewTextMessage.setText(message.getTextMessage());
-        } else if (url != null) {
+        if (url == null || url.isEmpty()) {
+            holder.imageViewImage.setVisibility(View.GONE);
+        } else {
             holder.imageViewImage.setVisibility(View.VISIBLE);
-            holder.textViewTextMessage.setVisibility(View.INVISIBLE);
+        }
+        if (textOfMessage != null && !textOfMessage.isEmpty()) {
+            holder.textViewTextMessage.setVisibility(View.VISIBLE);
+            holder.textViewTextMessage.setText(textOfMessage);
+        } else {
+            holder.textViewTextMessage.setVisibility(View.GONE);
+        }
+        if (url != null && !url.isEmpty()) {
             Picasso.get().load(url).into(holder.imageViewImage);
         }
 
