@@ -1,5 +1,9 @@
 package com.bespalov.mymessenger.adpters;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Shader;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,9 +26,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private int TYPE_MY_MESSAGE = 50;
     private int TYPE_OTHER_MESSAGE = 51;
 
+    private Context context;
 
-    public MessageAdapter() {
+
+    public MessageAdapter(Context context) {
         messages = new ArrayList<>();
+        this.context = context;
     }
 
     public void setMessages(List<Message> messages) {
@@ -34,16 +41,26 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     @Override
     public int getItemViewType(int position) {
-
-        return super.getItemViewType(position);
-    }
+        Message message = messages.get(position);
+        String author = message.getAuthor();
+        if (author.equals(PreferenceManager.getDefaultSharedPreferences(context).getString("author", "anonimus"))) {
+            return TYPE_MY_MESSAGE;
+        } else {
+            return TYPE_OTHER_MESSAGE;
+        }
+            }
 
     @NonNull
     @Override
     public MessageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
-        view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_my_message, parent, false);
+        if (viewType == TYPE_MY_MESSAGE) {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_my_message, parent, false);
+        } else {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_other_message, parent, false);
+        }
         return new MessageViewHolder(view);
+
     }
 
     @Override

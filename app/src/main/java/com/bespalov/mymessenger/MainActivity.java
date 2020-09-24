@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -181,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
         imageViewSendMessage = findViewById(R.id.imageViewSendMessage);
         imageViewSendImage = findViewById(R.id.imageViewSendImage);
         recyclerViewListMessage = findViewById(R.id.recyclerViewListMessage);
-        adapter = new MessageAdapter();
+        adapter = new MessageAdapter(this);
         recyclerViewListMessage.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewListMessage.setAdapter(adapter);
     }
